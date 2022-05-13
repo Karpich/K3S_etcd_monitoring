@@ -1,0 +1,32 @@
+- alert: EtcdHighNumberOfLeaderChanges
+    expr: increase(etcd_server_leader_changes_seen_total[10m]) > 2
+    for: 0m
+    labels:
+      severity: warning
+    annotations:
+      summary: Etcd high number of leader changes (instance {{ $labels.instance }})
+      description: "Etcd leader changed more than 2 times during 10 minutes\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+- alert: EtcdHighNumberOfFailedProposals
+    expr: increase(etcd_server_proposals_failed_total{kubernetes_namespace=""}[1h]) > 5
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: Etcd high number of failed proposals (instance {{ $labels.instance }})
+      description: "Etcd server got more than 5 failed proposals past hour\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+ - alert: EtcdNoLeader
+    expr: etcd_server_has_leader{kubernetes_namespace=""} == 0
+    for: 0m
+    labels:
+      severity: critical
+    annotations:
+      summary: Etcd no Leader (instance {{ $labels.instance }})
+      description: "Etcd cluster have no leader\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+ - alert: EtcdHighNumberOfFailedGrpcRequests
+    expr: sum(rate(grpc_server_handled_total{grpc_code!="OK"}[1m])) BY (grpc_service, grpc_method) / sum(rate(grpc_server_handled_total[1m])) BY (grpc_service, grpc_method) > 0.05
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: Etcd high number of failed GRPC requests (instance {{ $labels.instance }})
+      description: "More than 5% GRPC request failure detected in Etcd\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
